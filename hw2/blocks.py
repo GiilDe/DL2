@@ -74,9 +74,9 @@ class Linear(Block):
 
         # TODO: Create the weight matrix (w) and bias vector (b).
 
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        normal = torch.distributions.normal.Normal(0, wstd)
+        self.w = normal.sample(sample_shape=torch.Size([out_features, in_features]))
+        self.b = normal.sample(sample_shape=torch.Size([out_features, 1])).t()
 
         self.dw = torch.zeros_like(self.w)
         self.db = torch.zeros_like(self.b)
@@ -97,11 +97,8 @@ class Linear(Block):
 
         x = x.reshape((x.shape[0], -1))
 
-        # TODO: Compute the affine transform
-
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        y = x @ self.w.t()
+        out = y + self.b
 
         self.grad_cache['x'] = x
         return out
@@ -118,9 +115,10 @@ class Linear(Block):
         #   - dw, the gradient of the loss with respect to w
         #   - db, the gradient of the loss with respect to b
         # You should accumulate gradients in dw and db.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+
+        dx = dout @ self.w
+        self.db = dout
+        self.dw = x.t() @ dout
 
         return dx
 
