@@ -258,11 +258,11 @@ class CrossEntropyLoss(Block):
         e_x = torch.exp(x)
         e_x_sum = torch.sum(e_x, dim=1)
         log = torch.log(e_x_sum)
-        x_y = x[range(x.shape[0]), y]
+        x_y = x[range(N), y]
         x_y_neg = torch.neg(x_y)
         loss_m = x_y_neg + log
         loss = loss_m.sum()
-
+        loss = (1/N)*loss
         self.grad_cache['x'] = x
         self.grad_cache['y'] = y
         return loss
