@@ -76,7 +76,8 @@ class Linear(Block):
 
         normal = torch.distributions.normal.Normal(0, wstd)
         self.w = normal.sample(sample_shape=torch.Size([out_features, in_features]))
-        self.b = normal.sample(sample_shape=torch.Size([out_features, 1])).t()
+        b = normal.sample(sample_shape=torch.Size([out_features, 1]))
+        self.b = b.reshape((b.shape[0]))
 
         self.dw = torch.zeros_like(self.w)
         self.db = torch.zeros_like(self.b)
@@ -116,9 +117,11 @@ class Linear(Block):
         #   - db, the gradient of the loss with respect to b
         # You should accumulate gradients in dw and db.
 
+
+        ones = torch.ones(1, dout.shape[0])
         dx = dout @ self.w
-        self.db = dout
-        self.dw = x.t() @ dout
+        self.db = ones @ dout
+        self.dw = dout.t() @ x
 
         return dx
 
@@ -140,13 +143,10 @@ class ReLU(Block):
         dimension, and * is any number of other dimensions.
         :return: ReLU of each sample in x.
         """
-
-        # TODO: Implement the ReLU operation.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
-
         self.grad_cache['x'] = x
+
+        out = x.clone()
+        out[out < 0] = 0
         return out
 
     def backward(self, dout):
@@ -157,9 +157,10 @@ class ReLU(Block):
         x = self.grad_cache['x']
 
         # TODO: Implement gradient w.r.t. the input x
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+
+        dx = dout
+        dx[dx < 0] = 0
+        dx [dx != 0] = 1
 
         return dx
 
@@ -187,10 +188,15 @@ class Sigmoid(Block):
 
         # TODO: Implement the Sigmoid function. Save whatever you need into
         # grad_cache.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
 
+        x_e = torch.exp(torch.neg(x))
+        self.grad_cache['x_e'] = x_e
+
+        x_e_1 = torch.add(x_e, 1)
+        self.grad_cache['x_e_1'] = x_e_1
+
+        ones = torch.ones_like(x)
+        out = torch.div(ones, x_e_1)
         return out
 
     def backward(self, dout):
@@ -200,10 +206,12 @@ class Sigmoid(Block):
         """
 
         # TODO: Implement gradient w.r.t. the input x
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
 
+        x_e = self.grad_cache['x_e']
+        x_e_1 = self.grad_cache['x_e_1']
+        deno = torch.pow(x_e_1, 2)
+        dx = torch.div(x_e, deno)
+        dx = dout @ dx
         return dx
 
     def params(self):
@@ -244,9 +252,9 @@ class CrossEntropyLoss(Block):
         # notebook (i.e. directly using the class scores).
         # Tip: to get a different column from each row of a matrix tensor m,
         # you can index it with m[range(num_rows), list_of_cols].
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+
+
+        e_x = torch.exp(x)
 
         self.grad_cache['x'] = x
         self.grad_cache['y'] = y
