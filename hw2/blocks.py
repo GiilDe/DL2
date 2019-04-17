@@ -1,6 +1,6 @@
 import abc
 import torch
-
+import numpy
 
 class Block(abc.ABC):
     """
@@ -211,7 +211,7 @@ class Sigmoid(Block):
         x_e_1 = self.grad_cache['x_e_1']
         deno = torch.pow(x_e_1, 2)
         dx = torch.div(x_e, deno)
-        dx = dout @ dx
+        dx = torch.mul(dx, dout)
         return dx
 
     def params(self):
@@ -276,12 +276,24 @@ class CrossEntropyLoss(Block):
         x = self.grad_cache['x']
         y = self.grad_cache['y']
         N = x.shape[0]
-
+        D = x.shape[1]
         # TODO: Calculate the gradient w.r.t. the input x
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
 
+        ones = torch.ones(1, D)
+        zeros = torch.zeros_like(x)
+        zeros[range(N), y] = -1
+
+        e_x = torch.exp(x)
+        e_x_sum = torch.sum(e_x, dim=1)
+        e_x_sum = e_x_sum.reshape(N, 1)
+        e_x_sum = e_x_sum @ ones
+
+        #lan2 = numpy.log(2)
+        #e_x_sum = e_x_sum * lan2
+
+        div = torch.div(e_x, e_x_sum)
+        dx = div + zeros
+        dx = torch.mul(dx, dout)
         return dx
 
     def params(self):
