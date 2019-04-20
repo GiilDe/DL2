@@ -187,10 +187,7 @@ class BlocksTrainer(Trainer):
         # - Backward pass
         # - Optimize params
         # - Calculate number of correct predictions
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
-
+        y_hat = self.
         return BatchResult(loss, num_correct)
 
     def test_batch(self, batch) -> BatchResult:

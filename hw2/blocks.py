@@ -1,6 +1,8 @@
 import abc
 import torch
-import numpy
+import numpy as np
+import math
+
 
 class Block(abc.ABC):
     """
@@ -83,9 +85,7 @@ class Linear(Block):
         self.db = torch.zeros_like(self.b)
 
     def params(self):
-        return [
-            (self.w, self.dw), (self.b, self.db)
-        ]
+        return [(self.w, self.dw), (self.b, self.db)]
 
     def forward(self, x, **kw):
         """
@@ -116,7 +116,6 @@ class Linear(Block):
         #   - dw, the gradient of the loss with respect to w
         #   - db, the gradient of the loss with respect to b
         # You should accumulate gradients in dw and db.
-
 
         ones = torch.ones(1, dout.shape[0])
         dx = dout @ self.w
@@ -160,7 +159,7 @@ class ReLU(Block):
 
         dx = dout
         dx[dx < 0] = 0
-        dx [dx != 0] = 1
+        dx[dx != 0] = 1
 
         return dx
 
@@ -273,28 +272,18 @@ class CrossEntropyLoss(Block):
         defaults to 1 since the output of forward is scalar.
         :return: Gradient with respect to block input (only x), shape (N,D)
         """
-        x = self.grad_cache['x']
+        X = self.grad_cache['x']
         y = self.grad_cache['y']
-        N = x.shape[0]
-        D = x.shape[1]
+
         # TODO: Calculate the gradient w.r.t. the input x
 
-        ones = torch.ones(1, D)
-        zeros = torch.zeros_like(x)
-        zeros[range(N), y] = -1
+        dx = torch.exp(X)
+        e = torch.sum(dx, dim=1).reshape(-1, 1)
+        dx = torch.div(dx, e)
+        for row, label in zip(dx, y):
+            row[label] -= 1
 
-        e_x = torch.exp(x)
-        e_x_sum = torch.sum(e_x, dim=1)
-        e_x_sum = e_x_sum.reshape(N, 1)
-        e_x_sum = e_x_sum @ ones
-
-        #lan2 = numpy.log(2)
-        #e_x_sum = e_x_sum * lan2
-
-        div = torch.div(e_x, e_x_sum)
-        dx = div + zeros
-        dx = torch.mul(dx, dout)
-        return dx
+        return dx*dout*(10**-2)
 
     def params(self):
         return []
@@ -348,9 +337,9 @@ class Sequential(Block):
 
         # TODO: Implement the forward pass by passing each block's output
         # as the input of the next.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        out = x
+        for block in self.blocks:
+            out = block.forward(out)
 
         return out
 
@@ -360,9 +349,9 @@ class Sequential(Block):
         # TODO: Implement the backward pass.
         # Each block's input gradient should be the previous block's output
         # gradient. Behold the backpropagation algorithm in action!
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        din = dout
+        for block in reversed(self.blocks):
+            din = block.backward(din)
 
         return din
 
@@ -370,9 +359,8 @@ class Sequential(Block):
         params = []
 
         # TODO: Return the parameter tuples from all blocks.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        for block in self.blocks:
+            params += block.params()
 
         return params
 
