@@ -78,8 +78,7 @@ class Linear(Block):
 
         normal = torch.distributions.normal.Normal(0, wstd)
         self.w = normal.sample(sample_shape=torch.Size([out_features, in_features]))
-        b = normal.sample(sample_shape=torch.Size([out_features, 1]))
-        self.b = b.reshape((b.shape[0]))
+        self.b = normal.sample(sample_shape=torch.Size([1, out_features]))
 
         self.dw = torch.zeros_like(self.w)
         self.db = torch.zeros_like(self.b)
@@ -98,8 +97,7 @@ class Linear(Block):
 
         x = x.reshape((x.shape[0], -1))
 
-        y = x @ self.w.t()
-        out = y + self.b
+        out = x @ self.w.t() + self.b
 
         self.grad_cache['x'] = x
         return out
@@ -154,14 +152,10 @@ class ReLU(Block):
         :return: Gradient with respect to block input, shape (N, *)
         """
         x = self.grad_cache['x']
-
         # TODO: Implement gradient w.r.t. the input x
 
-        dx = dout
-        dx[dx < 0] = 0
-        dx[dx != 0] = 1
-
-        return dx
+        r = x.clone().detach()
+        return dout * torch.tensor(r > 0, dtype=torch.float)
 
     def params(self):
         return []
@@ -243,9 +237,8 @@ class CrossEntropyLoss(Block):
         definition above. A scalar.
         """
 
-        N = x.shape[0]
-        xmax, _ = torch.max(x, dim=1, keepdim=True)
-        x = x - xmax  # for numerical stability
+        #xmax, _ = torch.max(x, dim=1, keepdim=True)
+        #x = x - xmax  # for numerical stability
 
         # TODO: Compute the cross entropy loss using the last formula from the
         # notebook (i.e. directly using the class scores).
@@ -253,17 +246,15 @@ class CrossEntropyLoss(Block):
         # you can index it with m[range(num_rows), list_of_cols].
 
         # todo : ask if it is a mistake D = features ?
+        N = x.shape[0]
 
         e_x = torch.exp(x)
         e_x_sum = torch.sum(e_x, dim=1)
-        log = torch.log(e_x_sum)
         x_y = x[range(N), y]
-        x_y_neg = torch.neg(x_y)
-        loss_m = x_y_neg + log
-        loss = loss_m.sum()
-        loss = (1/N)*loss
+        loss_m = -x_y + torch.log(e_x_sum)
         self.grad_cache['x'] = x
         self.grad_cache['y'] = y
+        loss = torch.mean(loss_m)
         return loss
 
     def backward(self, dout=1.0):
@@ -278,12 +269,13 @@ class CrossEntropyLoss(Block):
         # TODO: Calculate the gradient w.r.t. the input x
 
         dx = torch.exp(X)
-        e = torch.sum(dx, dim=1).reshape(-1, 1)
-        dx = torch.div(dx, e)
-        for row, label in zip(dx, y):
-            row[label] -= 1
+        s = torch.sum(dx, dim=1).reshape(-1, 1)
+        dx = torch.div(dx, s)
 
-        return dx*dout*(10**-2)
+        dx[range(len(X)), y] -= 1
+
+        dx *= dout*(1/len(X))
+        return dx
 
     def params(self):
         return []
@@ -303,18 +295,17 @@ class Dropout(Block):
         # TODO: Implement the dropout forward pass. Notice that contrary to
         # previous blocks, this block behaves differently a according to the
         # current mode (train/test).
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
 
+        mask = (np.random.rand(*x.shape) < self.p)/self.p if mode == 'train' else torch.ones_like(x)
+        #check if should divide by 1-p
+        self.grad_cache['mask'] = mask
+        out = x*mask
         return out
 
     def backward(self, dout):
         # TODO: Implement the dropout backward pass.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
-
+        mask = self.grad_cache['mask']
+        dx = dout*mask
         return dx
 
     def params(self):
@@ -339,7 +330,7 @@ class Sequential(Block):
         # as the input of the next.
         out = x
         for block in self.blocks:
-            out = block.forward(out)
+            out = block.forward(out, **kw)
 
         return out
 
@@ -360,8 +351,7 @@ class Sequential(Block):
 
         # TODO: Return the parameter tuples from all blocks.
         for block in self.blocks:
-            params += block.params()
-
+            params.extend(block.params())
         return params
 
     def train(self, training_mode=True):

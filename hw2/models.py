@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 from .blocks import Block, Linear, ReLU, Sigmoid, Dropout, Sequential
 
@@ -30,12 +31,20 @@ class MLP(Block):
         :param: Dropout probability. Zero means no dropout.
         """
         blocks = []
-
         # TODO: Build the MLP architecture as described.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
 
+        active_to_class = {'relu': ReLU, 'sigmoid': Sigmoid}
+        activation_class = active_to_class[activation]
+        features_numbers = [in_features] + hidden_features
+        for i in range(1, len(features_numbers)):
+            in_num = features_numbers[i-1]
+            out_num = features_numbers[i]
+            blocks.append(Linear(in_num, out_num))
+            blocks.append(activation_class())
+            if dropout != 0:
+                blocks.append(Dropout(dropout))
+
+        blocks.append(Linear(features_numbers[-1], num_classes))
         self.sequence = Sequential(*blocks)
 
     def forward(self, x, **kw):
@@ -89,10 +98,10 @@ class ConvClassifier(nn.Module):
         # [(Conv -> ReLU)*P -> MaxPool]*(N/P)
         # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
         # Pooling to reduce dimensions.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-
-        # ========================
+        # # ====== YOUR CODE: ======
+        # raise NotImplementedError()
+        #
+        # # ========================
         seq = nn.Sequential(*layers)
         return seq
 
@@ -104,9 +113,9 @@ class ConvClassifier(nn.Module):
         # (Linear -> ReLU)*M -> Linear
         # You'll need to calculate the number of features first.
         # The last Linear layer should have an output dimension of out_classes.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        # # ====== YOUR CODE: ======
+        # raise NotImplementedError()
+        # # ========================
         seq = nn.Sequential(*layers)
         return seq
 
@@ -114,9 +123,9 @@ class ConvClassifier(nn.Module):
         # TODO: Implement the forward pass.
         # Extract features from the input, run the classifier on them and
         # return class scores.
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
+        # # ====== YOUR CODE: ======
+        # raise NotImplementedError()
+        # # ========================
         return out
 
 
@@ -128,7 +137,7 @@ class YourCodeNet(ConvClassifier):
     # improve it's results on CIFAR-10.
     # For example, add batchnorm, dropout, skip connections, change conv
     # filter sizes etc.
-    # ====== YOUR CODE: ======
-    raise NotImplementedError()
-    # ========================
+    # # ====== YOUR CODE: ======
+    # raise NotImplementedError()
+    # # ========================
 

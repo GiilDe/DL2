@@ -7,6 +7,7 @@ import torch
 from torch.utils.data import DataLoader
 from typing import Callable, Any
 from cs236605.train_results import BatchResult, EpochResult, FitResult
+from .optimizers import VanillaSGD
 
 
 class Trainer(abc.ABC):
@@ -71,9 +72,20 @@ class Trainer(abc.ABC):
             #   save the model to a file.
             # - Optional: Implement early stopping. This is a very useful and
             #   simple regularization technique that is highly recommended.
-            # ====== YOUR CODE: ======
-            raise NotImplementedError()
-            # ========================
+            actual_num_epochs += 1
+            train_res = self.train_epoch(dl_train, verbose=verbose)
+            test_res = self.test_epoch(dl_test, verbose=verbose)
+            train_loss.extend(train_res.losses)
+            train_acc.append(train_res.accuracy)
+            test_loss.extend(test_res.losses)
+            test_acc.append(test_res.accuracy)
+            if early_stopping is not None and len(test_loss) >= 2:
+                if test_loss[-1] >= test_loss[-2]:
+                    epochs_without_improvement += 1
+                    if epochs_without_improvement == early_stopping:
+                        break #TODO check if really exits loop
+                else:
+                    epochs_without_improvement = 0
 
         return FitResult(actual_num_epochs,
                          train_loss, train_acc, test_loss, test_acc)
@@ -187,7 +199,16 @@ class BlocksTrainer(Trainer):
         # - Backward pass
         # - Optimize params
         # - Calculate number of correct predictions
-        y_hat = self.
+        class_scores = self.model.forward(X)
+        loss = self.loss_fn.forward(class_scores, y)
+        dout = self.loss_fn.backward()
+        self.model.backward(dout)
+        #self.optimizer = VanillaSGD(self.model.params())
+        self.optimizer.step()
+        y_hat = torch.argmax(class_scores, dim=1)
+        diff = y - y_hat
+        diff[diff != 0] = 1
+        num_correct = len(y) - int(torch.sum(diff).item())
         return BatchResult(loss, num_correct)
 
     def test_batch(self, batch) -> BatchResult:
@@ -196,10 +217,12 @@ class BlocksTrainer(Trainer):
         # TODO: Evaluate the Block model on one batch of data.
         # - Forward pass
         # - Calculate number of correct predictions
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
-
+        class_scores = self.model.forward(X)
+        y_hat = torch.argmax(class_scores, dim=1)
+        diff = y - y_hat
+        diff[diff != 0] = 1
+        num_correct = len(y) - int(torch.sum(diff).item())
+        loss = self.loss_fn.forward(class_scores, y)
         return BatchResult(loss, num_correct)
 
 
