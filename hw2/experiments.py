@@ -55,9 +55,12 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     # - The fit results and all the experiment parameters will then be saved
     #  for you automatically.
     fit_res = None
-    # ====== YOUR CODE: ======
-    raise NotImplementedError()
-    # ========================
+    model = model_cls(filters_per_layer=[64], layers_per_block=2, pool_every=2,
+                   hidden_dims=[1024], ycn=False, **kw)
+    loss = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-2, momentum=0.9,)
+    trainer = training.Trainer(model, loss, optimizer, device)
+    fit_res = trainer.fit(early_stopping=early_stopping, dl_train=ds_train, dl_test=ds_test, num_epochs=epochs)
 
     save_experiment(run_name, out_dir, cfg, fit_res)
 

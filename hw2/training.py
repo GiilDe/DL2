@@ -86,6 +86,7 @@ class Trainer(abc.ABC):
                         break #TODO check if really exits loop
                 else:
                     epochs_without_improvement = 0
+            best_acc = max(best_acc if best_acc is not None else 0, test_res.accuracy)
 
         return FitResult(actual_num_epochs,
                          train_loss, train_acc, test_loss, test_acc)
@@ -199,11 +200,11 @@ class BlocksTrainer(Trainer):
         # - Backward pass
         # - Optimize params
         # - Calculate number of correct predictions
+        self.optimizer.zero_grad()
         class_scores = self.model.forward(X)
         loss = self.loss_fn.forward(class_scores, y)
         dout = self.loss_fn.backward()
         self.model.backward(dout)
-        #self.optimizer = VanillaSGD(self.model.params())
         self.optimizer.step()
         y_hat = torch.argmax(class_scores, dim=1)
         diff = y - y_hat
@@ -241,10 +242,15 @@ class TorchTrainer(Trainer):
         # - Backward pass
         # - Optimize params
         # - Calculate number of correct predictions
-        # ====== YOUR CODE: ======
-        raise NotImplementedError()
-        # ========================
-
+        self.optimizer.zero_grad()      #TODO make sure no need to call backward on model and backward on loss is ok
+        class_scores = self.model.forward(X)
+        loss = self.loss_fn.forward(class_scores, y)
+        loss.backward()
+        self.optimizer.step()
+        y_hat = torch.argmax(class_scores, dim=1)
+        diff = y - y_hat
+        diff[diff != 0] = 1
+        num_correct = len(y) - int(torch.sum(diff).item())
         return BatchResult(loss, num_correct)
 
     def test_batch(self, batch) -> BatchResult:
@@ -257,8 +263,11 @@ class TorchTrainer(Trainer):
             # TODO: Evaluate the PyTorch model on one batch of data.
             # - Forward pass
             # - Calculate number of correct predictions
-            # ====== YOUR CODE: ======
-            raise NotImplementedError()
-            # ========================
+            class_scores = self.model.forward(X)
+            y_hat = torch.argmax(class_scores, dim=1)
+            diff = y - y_hat
+            diff[diff != 0] = 1
+            num_correct = len(y) - int(torch.sum(diff).item())
+            loss = self.loss_fn.forward(class_scores, y)
 
         return BatchResult(loss, num_correct)

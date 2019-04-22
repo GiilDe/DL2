@@ -98,24 +98,38 @@ class ConvClassifier(nn.Module):
         # [(Conv -> ReLU)*P -> MaxPool]*(N/P)
         # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
         # Pooling to reduce dimensions.
-        # # ====== YOUR CODE: ======
-        # raise NotImplementedError()
-        #
-        # # ========================
+        filters = [in_channels] + self.filters
+        for i in range(1, len(filters)):
+            in_chann = filters[i-1]
+            out_chann = filters[i]
+            layers.append(nn.Conv2d(in_channels=in_chann, out_channels=out_chann, kernel_size=3, padding=1))
+            layers.append(nn.ReLU())
+            if i % self.pool_every == 0:
+                layers.append(nn.MaxPool2d(kernel_size=2))
+
         seq = nn.Sequential(*layers)
         return seq
 
     def _make_classifier(self):
         in_channels, in_h, in_w, = tuple(self.in_size)
 
+        pool_amount = len(self.filters)/self.pool_every
+        in_h_linear = int(in_h/(2**pool_amount))
+        in_w_linear = int(in_w/(2**pool_amount))
+        in_channels_linear = self.filters[-1]
+        in_features_linear = in_h_linear*in_w_linear*in_channels_linear
+        hidden_dimensions = [in_features_linear] + self.hidden_dims
         layers = []
         # TODO: Create the classifier part of the model:
         # (Linear -> ReLU)*M -> Linear
         # You'll need to calculate the number of features first.
         # The last Linear layer should have an output dimension of out_classes.
-        # # ====== YOUR CODE: ======
-        # raise NotImplementedError()
-        # # ========================
+        for i in range(1, len(hidden_dimensions)):
+            in_size = hidden_dimensions[i-1]
+            out_size = hidden_dimensions[i]
+            layers.append(nn.Linear(in_size, out_size))
+            layers.append(nn.ReLU())
+        layers.append(nn.Linear(hidden_dimensions[-1], self.out_classes))
         seq = nn.Sequential(*layers)
         return seq
 
@@ -123,9 +137,9 @@ class ConvClassifier(nn.Module):
         # TODO: Implement the forward pass.
         # Extract features from the input, run the classifier on them and
         # return class scores.
-        # # ====== YOUR CODE: ======
-        # raise NotImplementedError()
-        # # ========================
+        features = self.feature_extractor(x)
+        features = features.view(features.size(0), -1)
+        out = self.classifier(features)
         return out
 
 

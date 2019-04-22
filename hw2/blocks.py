@@ -274,7 +274,7 @@ class CrossEntropyLoss(Block):
 
         dx[range(len(X)), y] -= 1
 
-        dx *= dout*(1/len(X))
+        dx *= dout*(1/len(X)) #TODO make sure this is right and we need to divide by len(X)
         return dx
 
     def params(self):
@@ -297,7 +297,7 @@ class Dropout(Block):
         # current mode (train/test).
 
         mask = (np.random.rand(*x.shape) < self.p)/self.p if mode == 'train' else torch.ones_like(x)
-        #check if should divide by 1-p
+        #TODO check if should divide by 1-p
         self.grad_cache['mask'] = mask
         out = x*mask
         return out
