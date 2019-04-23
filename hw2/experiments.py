@@ -60,7 +60,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-2, momentum=0.9,)
     trainer = training.Trainer(model, loss, optimizer, device)
-    fit_res = trainer.fit(early_stopping=early_stopping, dl_train=ds_train, dl_test=ds_test, num_epochs=epochs)
+    fit_res = trainer.fit(dl_train=DataLoader(ds_train), dl_test=DataLoader(ds_test), early_stopping=early_stopping, num_epochs=epochs)
 
     save_experiment(run_name, out_dir, cfg, fit_res)
 
