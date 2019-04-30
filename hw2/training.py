@@ -207,9 +207,7 @@ class BlocksTrainer(Trainer):
         self.model.backward(dout)
         self.optimizer.step()
         y_hat = torch.argmax(class_scores, dim=1)
-        diff = y - y_hat
-        diff[diff != 0] = 1
-        num_correct = len(y) - int(torch.sum(diff).item())
+        num_correct = torch.sum(y_hat == y).item()
         return BatchResult(loss, num_correct)
 
     def test_batch(self, batch) -> BatchResult:
@@ -248,9 +246,7 @@ class TorchTrainer(Trainer):
         loss.backward()
         self.optimizer.step()
         y_hat = torch.argmax(class_scores, dim=1)
-        diff = y - y_hat
-        diff[diff != 0] = 1
-        num_correct = len(y) - int(torch.sum(diff).item())
+        num_correct = torch.sum(y_hat == y).item()
         return BatchResult(loss, num_correct)
 
     def test_batch(self, batch) -> BatchResult:
@@ -265,9 +261,7 @@ class TorchTrainer(Trainer):
             # - Calculate number of correct predictions
             class_scores = self.model.forward(X)
             y_hat = torch.argmax(class_scores, dim=1)
-            diff = y - y_hat
-            diff[diff != 0] = 1
-            num_correct = len(y) - int(torch.sum(diff).item())
+            num_correct = torch.sum(y_hat == y).item()
             loss = self.loss_fn.forward(class_scores, y)
 
         return BatchResult(loss, num_correct)
