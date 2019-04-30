@@ -218,9 +218,7 @@ class BlocksTrainer(Trainer):
         # - Calculate number of correct predictions
         class_scores = self.model.forward(X)
         y_hat = torch.argmax(class_scores, dim=1)
-        diff = y - y_hat
-        diff[diff != 0] = 1
-        num_correct = len(y) - int(torch.sum(diff).item())
+        num_correct = torch.sum(y_hat == y).item()
         loss = self.loss_fn.forward(class_scores, y)
         return BatchResult(loss, num_correct)
 
