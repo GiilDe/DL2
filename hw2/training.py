@@ -86,6 +86,8 @@ class Trainer(abc.ABC):
                         break #TODO check if really exits loop
                 else:
                     epochs_without_improvement = 0
+                    
+
             best_acc = max(best_acc if best_acc is not None else 0, test_res.accuracy)
 
         return FitResult(actual_num_epochs,

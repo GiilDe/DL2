@@ -117,8 +117,8 @@ class Linear(Block):
 
         ones = torch.ones(1, dout.shape[0])
         dx = dout @ self.w
-        self.db = ones @ dout
-        self.dw = dout.t() @ x
+        self.db += ones @ dout
+        self.dw += dout.t() @ x
 
         return dx
 
@@ -155,7 +155,8 @@ class ReLU(Block):
         # TODO: Implement gradient w.r.t. the input x
 
         r = x.clone().detach()
-        return dout * torch.tensor(r > 0, dtype=torch.float)
+        to_return = dout * torch.tensor(r > 0, dtype=torch.float)
+        return to_return
 
     def params(self):
         return []

@@ -89,19 +89,31 @@ class MomentumSGD(Optimizer):
         self.momentum = momentum
 
         # TODO: Add your own initializations as needed.
-        self.V = np.zeros(len(params))
+
+        #self.V = np.zeros(len(params))
+        self.V = [torch.zeros_like(p[1]) for p in self.params]
 
     def step(self):
+        '''
         for (p, dp), v in zip(self.params, self.V):
             if dp is None:
                 continue
+            dp += self.reg * p
+            v = self.momentum*v - self.learn_rate*dp #TODO does it actually change the element in self.V?
+            p += v
+        '''
+
+        for (p, dp), idx_param in zip(self.params, range(len(self.params))):
+            if dp is None:
+                 continue
 
             # TODO: Implement the optimizer step.
             # update the parameters tensor based on the velocity. Don't forget
             # to include the regularization term.
+
             dp += self.reg * p
-            v = self.momentum*v - self.learn_rate*dp #TODO does it actually change the element in self.V?
-            p += v
+            self.V[idx_param] = self.momentum * self.V[idx_param] - self.learn_rate*dp
+            p += self.V[idx_param]
 
 
 class RMSProp(Optimizer):
@@ -120,10 +132,23 @@ class RMSProp(Optimizer):
         self.eps = eps
 
         # TODO: Add your own initializations as needed.
-        self.R = np.zeros(len(params))
+
+        #self.R = np.zeros(len(params))
+        self.R = [torch.zeros_like(p[1]) for p in self.params]
 
     def step(self):
-        for (p, dp), r in zip(self.params, self.R):
+
+        '''
+         for (p, dp), r in zip(self.params, self.R):
+            if dp is None:
+                continue
+         dp += self.reg * p
+            r = self.decay * r + (1 - self.decay) * dp**2
+            p -= (self.learn_rate/math.sqrt(r + self.eps)) * dp
+
+        '''
+
+        for (p, dp), idx_param in zip(self.params, range(len(self.params))):
             if dp is None:
                 continue
 
@@ -131,6 +156,7 @@ class RMSProp(Optimizer):
             # Create a per-parameter learning rate based on a decaying moving
             # average of it's previous gradients. Use it to update the
             # parameters tensor.
+
             dp += self.reg * p
-            r = self.decay * r + (1 - self.decay) * dp**2
-            p -= (self.learn_rate/math.sqrt(r + self.eps)) * dp
+            self.R[idx_param] = self.decay * self.R[idx_param] + (1 - self.decay) *  (dp**2)
+            p -= (self.learn_rate/torch.sqrt(self.R[idx_param] + self.eps)) * dp
