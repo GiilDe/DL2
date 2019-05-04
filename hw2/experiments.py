@@ -56,7 +56,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     #  for you automatically.
     fit_res = None
     model = model_cls(filters=filters_per_layer*layers_per_block, pool_every=pool_every,
-                   hidden_dims=hidden_dims, ycn=False, **kw)
+                   hidden_dims=hidden_dims, **kw)
     loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr,weight_decay=reg)
     trainer = training.Trainer(model, loss, optimizer, device)
