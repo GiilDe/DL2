@@ -264,6 +264,6 @@ class TorchTrainer(Trainer):
             class_scores = self.model.forward(X)
             y_hat = torch.argmax(class_scores, dim=1)
             num_correct = torch.sum(y_hat == y).item()
-            loss = self.loss_fn.forward(class_scores, y)
+            loss = self.loss_fn.forward(class_scores, y).item()
 
         return BatchResult(loss, num_correct)
