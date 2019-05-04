@@ -76,9 +76,9 @@ class Trainer(abc.ABC):
             actual_num_epochs += 1
             train_res = self.train_epoch(dl_train, verbose=verbose)
             test_res = self.test_epoch(dl_test, verbose=verbose)
-            train_loss.append(sum(train_res.losses)/len(train_res.losses).item())
+            train_loss.append(sum(train_res.losses)/len(train_res.losses))
             train_acc.append(train_res.accuracy)
-            test_loss.append(sum(test_res.losses)/len(test_res.losses).item())
+            test_loss.append(sum(test_res.losses)/len(test_res.losses))
             test_acc.append(test_res.accuracy)
             if early_stopping is not None and len(test_loss) >= 2:
                 if test_loss[-1] >= test_loss[-2]:
