@@ -60,7 +60,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
                    hidden_dims=hidden_dims, **kw)
     loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr,weight_decay=reg)
-    trainer = training.Trainer(model, loss, optimizer, device)
+    trainer = training.TorchTrainer(model, loss, optimizer, device)
     fit_res = trainer.fit(dl_train=DataLoader(ds_train,batch_size=bs_train), dl_test=DataLoader(ds_test,batch_size=bs_test), early_stopping=early_stopping, num_epochs=epochs)
 
     save_experiment(run_name, out_dir, cfg, fit_res)
