@@ -242,11 +242,11 @@ class TorchTrainer(Trainer):
         # - Optimize params
         # - Calculate number of correct predictions
         self.optimizer.zero_grad()      #TODO make sure no need to call backward on model and backward on loss is ok
-        class_scores = self.model.forward(X)
+        class_scores = self.model.forward(X).to(self.device)
         loss = self.loss_fn.forward(class_scores, y)
         loss.backward()
         self.optimizer.step()
-        y_hat = torch.argmax(class_scores, dim=1)
+        y_hat = torch.argmax(class_scores, dim=1).to(self.device)
         num_correct = torch.sum(y_hat == y).item()
         return BatchResult(loss, num_correct)
 
