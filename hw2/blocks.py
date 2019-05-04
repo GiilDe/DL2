@@ -155,8 +155,7 @@ class ReLU(Block):
         # TODO: Implement gradient w.r.t. the input x
 
         r = x.clone().detach()
-        to_return = dout * torch.tensor(r > 0, dtype=torch.float)
-        return to_return
+        return dout * torch.tensor(r > 0, dtype=torch.float)
 
     def params(self):
         return []

@@ -55,12 +55,12 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     # - The fit results and all the experiment parameters will then be saved
     #  for you automatically.
     fit_res = None
-    model = model_cls(filters_per_layer=[64], layers_per_block=2, pool_every=2,
-                   hidden_dims=[1024], ycn=False, **kw)
+    model = model_cls(filters=filters_per_layer*layers_per_block, pool_every=pool_every,
+                   hidden_dims=hidden_dims, ycn=False, **kw)
     loss = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-2, momentum=0.9,)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr,weight_decay=reg)
     trainer = training.Trainer(model, loss, optimizer, device)
-    fit_res = trainer.fit(dl_train=DataLoader(ds_train), dl_test=DataLoader(ds_test), early_stopping=early_stopping, num_epochs=epochs)
+    fit_res = trainer.fit(dl_train=DataLoader(ds_train,batch_size=bs_train), dl_test=DataLoader(ds_test,batch_size=bs_test), early_stopping=early_stopping, num_epochs=epochs)
 
     save_experiment(run_name, out_dir, cfg, fit_res)
 
