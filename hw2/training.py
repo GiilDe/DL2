@@ -245,6 +245,7 @@ class TorchTrainer(Trainer):
         class_scores = self.model.forward(X).to(self.device)
         loss = self.loss_fn.forward(class_scores, y)
         loss.backward()
+        loss = loss.item()
         self.optimizer.step()
         y_hat = torch.argmax(class_scores, dim=1).to(self.device)
         num_correct = torch.sum(y_hat == y).item()
