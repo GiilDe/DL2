@@ -1,13 +1,16 @@
-for i in 32 64
-do
-	for j in 2 4 8 16
-	do
-		let x=${j}/2
-		srun -c 2 --gres=gpu:1 --pty python -m hw2.experiments run-exp -n exp1_1_K${i}_L${j} --seed 42 --bs-train 128 --batches 100 --epochs 10 --early-stopping 3 --filters-per-layer ${i} --layers-per-block ${j} --pool-every ${x} --hidden-dims 100
-	done
-done
+#for i in 32 64
+#do
+#	for j in 2 4 8 16
+#	do
+#		let x=${j}/2
+#		srun -c 2 --gres=gpu:1 --pty python -m hw2.experiments run-exp -n exp1_1_K${i}_L${j} --seed 42 --bs-train 128 --batches 100 --epochs 10 --early-stopping 3 --filters-per-layer ${i} --layers-per-block ${j} --pool-every ${x} --hidden-dims 100
+#	done
+#done
 
-for j in 2 4 8
+let x=1
+srun -c 2 --gres=gpu:1 --pty python -m hw2.experiments run-exp -n exp1_2_K${i}_L${j} --seed 42 --bs-train 128 --batches 100 --epochs 10 --early-stopping 3 --filters-per-layer ${i} --layers-per-block ${j} --pool-every ${x} --hidden-dims 100
+
+for j in 4 8
 do
 	for i in 32 64 128 258
 	do
