@@ -55,7 +55,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     # - The fit results and all the experiment parameters will then be saved
     #  for you automatically.
     fit_res = None
-    x_in, y_out = ds_train[0].to(device)
+    x_in, y_out = ds_train[0]
     model = model_cls(in_size=x_in.shape, out_classes=10, filters=filters_per_layer*layers_per_block, pool_every=pool_every,
                    hidden_dims=hidden_dims, **kw).to(device)
     loss = torch.nn.CrossEntropyLoss().to(device)
