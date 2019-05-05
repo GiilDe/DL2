@@ -164,7 +164,7 @@ class YourCodeNet(ConvClassifier):
             in_chann = filters[i-1]
             out_chann = filters[i]
             layers.append(nn.Conv2d(in_channels=in_chann, out_channels=out_chann, kernel_size=3, padding=1))
-            layers.append(nn.BatchNorm1d(out_chann))
+            layers.append(nn.BatchNorm2d(out_chann))
             layers.append(nn.ReLU())
             if i % self.pool_every == 0:
                 layers.append(nn.MaxPool2d(kernel_size=2))
