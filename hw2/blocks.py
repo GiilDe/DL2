@@ -157,6 +157,7 @@ class ReLU(Block):
         r = x.clone().detach()
         return dout * torch.tensor(r > 0, dtype=torch.float)
 
+
     def params(self):
         return []
 
