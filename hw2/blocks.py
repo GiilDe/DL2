@@ -301,7 +301,7 @@ class Dropout(Block):
         # current mode (train/test).
 
         if self.training_mode:
-            prob = torch.distributions.binomial.Binomial(1, torch.ones_like(x)*self.p)
+            prob = torch.distributions.binomial.Binomial(1, torch.ones_like(x)*self.p) # TODO: 1-P?
             mask = prob.sample()/(1-self.p)
             out = x*mask
         else:
