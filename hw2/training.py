@@ -73,9 +73,13 @@ class Trainer(abc.ABC):
             #   save the model to a file.
             # - Optional: Implement early stopping. This is a very useful and
             #   simple regularization technique that is highly recommended.
+            batches = None
+            if "max_batches" in kw:
+                batches = kw.get("max_batches")
+
             actual_num_epochs += 1
-            train_res = self.train_epoch(dl_train, verbose=verbose)
-            test_res = self.test_epoch(dl_test, verbose=verbose)
+            train_res = self.train_epoch(dl_train, verbose=verbose, max_batches=batches)
+            test_res = self.test_epoch(dl_test, verbose=verbose, max_batches=batches)
             train_loss.append(sum(train_res.losses)/len(train_res.losses))
             train_acc.append(train_res.accuracy)
             test_loss.append(sum(test_res.losses)/len(test_res.losses))
@@ -87,7 +91,6 @@ class Trainer(abc.ABC):
                         break #TODO check if really exits loop
                 else:
                     epochs_without_improvement = 0
-                    
 
             best_acc = max(best_acc if best_acc is not None else 0, test_res.accuracy)
 
