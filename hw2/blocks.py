@@ -155,7 +155,9 @@ class ReLU(Block):
         # TODO: Implement gradient w.r.t. the input x
 
         r = x.clone().detach()
-        return dout * torch.tensor(r > 0, dtype=torch.float)
+        r[r > 0] = 1
+        r[r < 0] = 0
+        return dout * r
 
 
     def params(self):
@@ -299,8 +301,8 @@ class Dropout(Block):
         # current mode (train/test).
 
         if self.training_mode:
-            prob = torch.distributions.binomial.Binomial(1, torch.ones_like(x)*(1-self.p))
-            mask = prob.sample() / (1-self.p)
+            prob = torch.distributions.binomial.Binomial(1, torch.ones_like(x)*self.p)
+            mask = prob.sample()/(1-self.p)
             out = x*mask
         else:
             mask = torch.ones_like(x)

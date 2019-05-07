@@ -134,6 +134,10 @@ An equation: $e^{i\pi} -1 = 0$
 part3_q4 = r"""
 **Your answer:**
 
+1.  first, we added batch-normalization.  that allow us to train the model in higher depths. 
+We also added dropout layers, in order to deal with over-fitting.  we tuned the parameter p in the dropout layer.
+
+2.  
 
 Write your answer using **markdown** and $\LaTeX$:
 ```python
