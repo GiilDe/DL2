@@ -299,31 +299,22 @@ class Dropout(Block):
         # TODO: Implement the dropout forward pass. Notice that contrary to
         # previous blocks, this block behaves differently a according to the
         # current mode (train/test).
-
-        '''
-        mask = (torch.random.rand(*x.shape) < self.p) / self.p if self.training_mode else torch.ones_like(x)
-        self.grad_cache['mask'] = mask
-        out = x * mask
-        return out
-        '''
-
         if self.training_mode:
-            prob = torch.distributions.binomial.Binomial(1, torch.ones_like(x)*(1-self.p)) # TODO: 1-P?
-            mask = prob.sample()/(1-self.p)
+            prob = torch.distributions.binomial.Binomial(1, self.p)
+            mask = prob.sample(x.size())
             out = x*mask
         else:
             mask = torch.ones_like(x)
-            out = x
-        #TODO check if should divide by 1-p
+            out = x*(1-self.p)
         self.grad_cache['mask'] = mask
         return out
 
-
     def backward(self, dout):
         # TODO: Implement the dropout backward pass.
+        a = 1 if self.training_mode else 1-self.p
         mask = self.grad_cache['mask']
         dx = dout*mask
-        return dx
+        return dx*a
 
     def params(self):
         return []
