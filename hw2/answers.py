@@ -43,6 +43,19 @@ def part2_dropout_hp():
 part2_q1 = r"""
 **Your answer:**
 
+1. there were some some behaviors which we expected, and some whose we didn't. 
+We expected that as we increase the dropout parameter, the train loss will increase, and that is shown in the graphs we got
+for dropout=0.4 comparing to dropout=0. we assume to have this behavior because higher value of dropout decrease the 
+over-fitting, by restricting the model and making it more general, and that prevents it from getting to over-fitting situation.
+On the other hand, we observe different behavior with dropout=0.8, which we didn't expected. In fact, we got better results 
+that we assumed with that value of dropout. 
+We can conclude from it that sometimes making the model "less sofisticated" can actually improve the performance.
+
+2. The best dropout value was 0.4.  we can observe that as the train loss was growing, the test loss was increasing.
+that's because this model ability of generalization was getting better, as we increased the dropout parameter from
+0 to 0.4.
+Later on, for the value of 0.8 the performance was getting worse. that's because we lost to much information when
+we drop too many neurons.
 
 Write your answer using **markdown** and $\LaTeX$:
 ```python
@@ -119,6 +132,13 @@ An equation: $e^{i\pi} -1 = 0$
 part3_q3 = r"""
 **Your answer:**
 
+for depth=4, for all values of K, the model wasn't trainable. we got the highest train loss, and the accuracy was 
+the worst.
+comparing depth=1 and depth=2, we can see small improvement with the last value of depth, especially in the test
+accuracy (the train accuracy is almost equal).
+for depth=3.....
+the best K value 
+
 
 
 Write your answer using **markdown** and $\LaTeX$:
@@ -137,7 +157,11 @@ part3_q4 = r"""
 1.  first, we added batch-normalization.  that allow us to train the model in higher depths. 
 We also added dropout layers, in order to deal with over-fitting.  we tuned the parameter p in the dropout layer.
 
-2.  
+2.  first of all, we notice the test acuuracy grows from around 70 to over 80 percent, although we made only some
+small modifications to out model. 
+the most effective thing was to add batch-normaliztion. then, we could fo deeper and the model could still be trained.
+the best value for depth and dropout were
+
 
 Write your answer using **markdown** and $\LaTeX$:
 ```python
