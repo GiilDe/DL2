@@ -152,16 +152,18 @@ class YourCodeNet(ConvClassifier):
     # For example, add batchnorm, dropout, skip connections, change conv
     # filter sizes etc.
 
+
     def _make_feature_extractor(self):
         in_channels, in_h, in_w, = tuple(self.in_size)
 
         layers = []
+        # TODO: Create the feature extractor part of the model:
         # [(Conv -> ReLU)*P -> MaxPool]*(N/P)
         # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
         # Pooling to reduce dimensions.
         filters = [in_channels] + self.filters
         for i in range(1, len(filters)):
-            in_chann = filters[i-1]
+            in_chann = filters[i - 1]
             out_chann = filters[i]
             layers.append(nn.Conv2d(in_channels=in_chann, out_channels=out_chann, kernel_size=3, padding=1))
             layers.append(nn.BatchNorm2d(out_chann))
@@ -173,6 +175,7 @@ class YourCodeNet(ConvClassifier):
         seq = nn.Sequential(*layers)
         return seq
 
+
     def _make_classifier(self):
         in_channels, in_h, in_w, = tuple(self.in_size)
 
@@ -183,14 +186,14 @@ class YourCodeNet(ConvClassifier):
         in_features_linear = in_h_linear*in_w_linear*in_channels_linear
         hidden_dimensions = [in_features_linear] + self.hidden_dims
         layers = []
+        # TODO: Create the classifier part of the model:
         # (Linear -> ReLU)*M -> Linear
-        # calculate the number of features first.
+        # You'll need to calculate the number of features first.
         # The last Linear layer should have an output dimension of out_classes.
         for i in range(1, len(hidden_dimensions)):
             in_size = hidden_dimensions[i-1]
             out_size = hidden_dimensions[i]
             layers.append(nn.Linear(in_size, out_size))
-            layers.append(nn.BatchNorm1d(out_size))
             layers.append(nn.ReLU())
         layers.append(nn.Dropout2d(p=0.2))
         layers.append(nn.Linear(hidden_dimensions[-1], self.out_classes))
